@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="50" height="25" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="tileset" tilewidth="32" tileheight="32">
+  <image source="tileset.png" width="640" height="640"/>
+ </tileset>
+ <layer name="whiteStones" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJzt0rEJAAAIBDE799/Y1l6weBK4Da4KAADy9Qo+XF7zKUCmARr3ACQ=
+  </data>
+ </layer>
+ <layer name="blackStones" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJzt0DENAAAIBLFf8G+ZEQMkMLQKLpcAwK66Dnii4gUAADAazrgAEA==
+  </data>
+ </layer>
+ <layer name="whiteSpikes" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztyqENAAAIBLH37L8vA6DA0ibnLgEAgKkO/yYAgG8aLFsAkA==
+  </data>
+ </layer>
+ <layer name="blackSpikes" width="50" height="25">
+  <properties>
+   <property name="velocity" value="5"/>
+  </properties>
+  <data encoding="base64" compression="zlib">
+   eJzt0qENAAAIA0Fs91+YFQgGxF3yvqJVAHyS6wFwaPL/LAIAgA8a1/cAiA==
+  </data>
+ </layer>
+ <layer name="split" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztwzEJAAAMA7DC/HueiV4lgSQAADTdSAAAuh7N1wCX
+  </data>
+ </layer>
+ <objectgroup name="player" width="50" height="25">
+  <object x="14" y="177">
+   <ellipse/>
+  </object>
+ </objectgroup>
+ <layer name="crystal" width="50" height="25">
+  <data encoding="base64" compression="zlib">
+   eJztzgEJAAAIwLBj/9DGEGRLsAIAAAC+m+sA0AIamAAD
+  </data>
+ </layer>
+</map>
