@@ -8,8 +8,8 @@ import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.seligames.buildUp.Constants;
-import com.seligames.buildUp.entities.BlackPlayer;
-import com.seligames.buildUp.entities.WhitePlayer;
+import com.seligames.buildUp.entities.black.BlackPlayer;
+import com.seligames.buildUp.entities.white.WhitePlayer;
 
 public class MyContactListener implements ContactListener {
 

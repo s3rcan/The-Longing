@@ -1,5 +1,7 @@
-package com.seligames.buildUp.entities;
+package com.seligames.buildUp.entities.black;
 
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
@@ -8,36 +10,39 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.seligames.buildUp.BuildUpGame;
 import com.seligames.buildUp.Constants;
+import com.seligames.buildUp.entities.abstracts.Stone;
 
-public class Stone extends GameEntity{
+public class BlackStone extends Stone {
 
-	private Color color;
-	private boolean active;
-	
-	public Stone(Vector2 pos, Color color) {
-		this(pos, Constants.TILE_WIDTH, Constants.TILE_HEIGHT, color);
+	public BlackStone(Vector2 pos) {
+		this(pos, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
 	}
-	
-	public Stone(Vector2 pos, float width, float height, Color color) {
+
+	public BlackStone(Vector2 pos, float width, float height) {
 		super(pos, width, height);
+		TextureRegion[] tr = new TextureRegion[2];
 		
-		this.color = color;
+		Texture t = BuildUpGame.assetManager.get("res/blackStone.png");
+		tr[0] = new TextureRegion(t);
 		
-//		if(color == Color.WHITE)
-//			currentTexRegion = BuildUpGame.assetManager.get("res/whiteStone.png");
-//		if(color == Color.BLACK)
-//			currentTexRegion = BuildUpGame.assetManager.get("res/blackStone.png");
+		t = BuildUpGame.assetManager.get("res/blackStoneFaded.png");
+		tr[1] = new TextureRegion(t);
+
+		animation.setFrames(tr);
+
+		this.active = true;
+		currentTexRegion = animation.get(0);
 	}
 
 	@Override
 	public void setWorldAndCreateBody(World world) {
 		this.world = world;
-		
+
 		BodyDef bDef = new BodyDef();
 		bDef.fixedRotation = true;
 		bDef.type = BodyType.StaticBody;
 		bDef.position.set(position);
-		
+
 		ChainShape shape = new ChainShape();
 		Vector2[] v = new Vector2[5];
 		v[0] = new Vector2(0, 0);
@@ -46,40 +51,21 @@ public class Stone extends GameEntity{
 		v[3] = new Vector2(0, height / Constants.PPM);
 		v[4] = new Vector2(0, 0);
 		shape.createChain(v);
-		
+
 		FixtureDef fDef = new FixtureDef();
 		fDef.shape = shape;
 		fDef.density = 5.f;
 		fDef.friction = .5f;
-//		fDef.filter.categoryBits = Constants.C_STONE;
-//		fDef.filter.maskBits = Constants.C_PLAYER;
-		
+		fDef.filter.categoryBits = Constants.C_BLACKSTONE;
+		fDef.filter.maskBits = Constants.C_BLACKPLAYER;
+
 		body = world.createBody(bDef);
 		body.createFixture(fDef).setUserData(this);
-		
+
 		shape.dispose();
-	}
-
-	public Color getColor() {
-		return color;
-	}
-
-	public void setColor(Color color) {
-		this.color = color;
-		
-		if(color == Color.WHITE)
-			currentTexRegion = BuildUpGame.assetManager.get("res/whiteStone.png");
-		if(color == Color.BLACK)
-			currentTexRegion = BuildUpGame.assetManager.get("res/blackStone.png");
 	}
 
 	public boolean isActive() {
 		return active;
 	}
-
-	public void setActive(boolean active) {
-		this.active = active;
-	}
-	
-	
 }

@@ -13,7 +13,6 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
@@ -23,15 +22,15 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.seligames.buildUp.BuildUpGame;
 import com.seligames.buildUp.Constants;
-import com.seligames.buildUp.entities.BlackPlayer;
-import com.seligames.buildUp.entities.BlackStone;
-import com.seligames.buildUp.entities.Color;
-import com.seligames.buildUp.entities.Crystal;
 import com.seligames.buildUp.entities.Direction;
-import com.seligames.buildUp.entities.Spike;
-import com.seligames.buildUp.entities.SplitGround;
-import com.seligames.buildUp.entities.WhitePlayer;
-import com.seligames.buildUp.entities.WhiteStone;
+import com.seligames.buildUp.entities.black.BlackPlayer;
+import com.seligames.buildUp.entities.black.BlackSpike;
+import com.seligames.buildUp.entities.black.BlackStone;
+import com.seligames.buildUp.entities.natural.Crystal;
+import com.seligames.buildUp.entities.natural.SplitGround;
+import com.seligames.buildUp.entities.white.WhitePlayer;
+import com.seligames.buildUp.entities.white.WhiteSpike;
+import com.seligames.buildUp.entities.white.WhiteStone;
 import com.seligames.buildUp.handlers.BackgroundLayer;
 import com.seligames.buildUp.handlers.MyContactListener;
 import com.seligames.buildUp.handlers.MyInput;
@@ -54,8 +53,8 @@ public class PlayScreen implements Screen {
 	private Array<WhiteStone> whiteStones;
 	private Array<BlackStone> blackStones;
 
-	private Array<Spike> whiteSpikes;
-	private Array<Spike> blackSpikes;
+	private Array<WhiteSpike> whiteSpikes;
+	private Array<BlackSpike> blackSpikes;
 	private Array<Crystal> crystals;
 
 	private BitmapFont initialFont;
@@ -77,9 +76,10 @@ public class PlayScreen implements Screen {
 
 	private float mapWidth;
 	private float mapHeight;
-	
+
+	@SuppressWarnings("unused")
 	private float tileCountY;
-	private float shift;
+	// private float shift;
 	private boolean loadMap;
 	private boolean gameFinished;
 
@@ -102,8 +102,6 @@ public class PlayScreen implements Screen {
 				1.f, Direction.LEFT);
 		backgroundLayer.setAutoUpdate(false);
 
-//		loadMap(currentLevel);
-
 		if (debugMode) {
 			box2dcam = new OrthographicCamera();
 			box2dcam.setToOrtho(false, Constants.V_WIDTH / Constants.PPM
@@ -114,7 +112,6 @@ public class PlayScreen implements Screen {
 
 	@Override
 	public void show() {
-		
 		SoundLib.intro.stop();
 		gameFinished = false;
 		loadMap = false;
@@ -124,133 +121,53 @@ public class PlayScreen implements Screen {
 		currentLevel = level;
 
 		whiteActive = false;
+
+		if (world != null)
+			world.dispose();
 		world = new World(new Vector2(0, 0), true);
 
 		contactListener = new MyContactListener();
 		world.setContactListener(contactListener);
 
+		if (b2dr != null)
+			b2dr.dispose();
 		b2dr = new Box2DDebugRenderer();
+
 		game.camera.setToOrtho(false, Constants.V_WIDTH, Constants.V_HEIGHT);
 
-		
 		if (currentLevel % 2 == 0) {
 			SoundLib.bgv3.stop();
 			SoundLib.bgv2.play();
-			
+
 		}
 		if (currentLevel % 2 == 1) {
 			SoundLib.bgv2.stop();
 			SoundLib.bgv3.play();
 		}
-		
-		
+
 		// create map
 		createMap(level);
-		Array<Body> bodies = new Array<Body>();
-
-		world.getBodies(bodies);
-		shift = (float) ((11 - tileCountY) / Constants.PPM);
-
-		if (shift < 0)
-			return;
-		for (int i = 0; i < bodies.size; i++) {
-			Body b = bodies.get(i);
-			Vector2 v = b.getPosition();
-			float angle = b.getAngle();
-
-			b.setTransform(v.x, v.y + shift, angle);
-		}
+		
+		// Array<Body> bodies = new Array<Body>();
+		//
+		// world.getBodies(bodies);
+		// shift = (float) ((11 - tileCountY) / Constants.PPM);
+		//
+		// if (shift < 0)
+		// return;
+		// for (int i = 0; i < bodies.size; i++) {
+		// Body b = bodies.get(i);
+		// Vector2 v = b.getPosition();
+		// float angle = b.getAngle();
+		//
+		// b.setTransform(v.x, v.y + shift, angle);
+		// }
+		
+		this.paused = false;
 	}
 
 	@Override
 	public void render(float delta) {
-
-		if (paused && contactListener.isPlayerDead()) {
-			game.batch.begin();
-
-			initialFont.draw(game.batch, "YOU DIED!",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 + 64);
-			initialFont.draw(game.batch, "Press ESC to go to Main Menu.",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2);
-			initialFont.draw(game.batch, "Press R to retry.",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 - 64);
-
-			game.batch.end();
-
-			if (MyInput.isPressed(MyInput.ESC)) {
-				paused = false;
-				loadMap(0);
-				game.setScreen(BuildUpGame.mainMenuScene);
-			}
-			if (MyInput.isPressed(MyInput.R)) {
-				paused = false;
-				loadMap(currentLevel);
-			}
-
-			return;
-		}
-		if (paused && gameFinished) {
-			game.batch.begin();
-
-			initialFont.draw(game.batch, "YOU HAVE FINISHED THE GAME!",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 + 64);
-			initialFont.draw(game.batch, "Press ESC to continue.",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2);
-
-			game.batch.end();
-
-			if (MyInput.isPressed(MyInput.ESC)) {
-				paused = false;
-				loadMap(0);
-				game.setScreen(BuildUpGame.creditsScreen);
-			}
-			return;
-		}
-		// pause
-		if (paused) {
-			game.batch.begin();
-
-			initialFont.draw(game.batch, "PAUSED!", Constants.V_WIDTH / 2 - 64,
-					Constants.V_HEIGHT / 2 + 64);
-			initialFont.draw(game.batch, "Press ESC to go to Main Menu.",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2);
-			initialFont.draw(game.batch, "Press P to resume.",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 - 64);
-			initialFont.draw(game.batch, "Press R to retry.",
-					Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 - 128);
-
-			game.batch.end();
-			if (MyInput.isPressed(MyInput.ESC)) {
-				paused = false;
-				loadMap(0);
-				game.setScreen(BuildUpGame.mainMenuScene);
-			}
-			if (MyInput.isPressed(MyInput.P)) {
-				paused = false;
-			}
-			if (MyInput.isPressed(MyInput.R)) {
-				paused = false;
-				loadMap(currentLevel);
-			}
-
-			return;
-		}
-
-		if (contactListener.loadNextLevel()) {
-			if (currentLevel + 1 == Constants.LEVEL_COUNT) {
-				gameFinished = true;
-				paused = true;
-				return;
-			}
-			loadNextLevel();
-			return;
-		}
-		if (contactListener.isPlayerDead()) {
-			
-			playerHit();
-			
-			return;
-		}
 		// update
 		update(delta);
 
@@ -294,10 +211,90 @@ public class PlayScreen implements Screen {
 		whitePlayer.render(sb);
 		blackPlayer.render(sb);
 
-		// tmr.setView(cam);
-		// tmr.render();
 		if (debugMode)
 			b2dr.render(world, box2dcam.combined);
+
+		// player died
+		if(paused) {
+			if (contactListener.isPlayerDead()) {
+				game.batch.begin();
+
+				initialFont.draw(game.batch, "YOU DIED!",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 + 64);
+				initialFont.draw(game.batch, "Press ESC to go to Main Menu.",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2);
+				initialFont.draw(game.batch, "Press R to retry.",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 - 64);
+
+				game.batch.end();
+
+				if (MyInput.isPressed(MyInput.ESC)) {
+					game.setScreen(BuildUpGame.mainMenuScene);
+				}
+				if (MyInput.isPressed(MyInput.R)) {
+					loadMap(currentLevel);
+				}
+
+				return;
+			}else if (gameFinished) {
+				game.batch.begin();
+
+				initialFont.draw(game.batch, "YOU HAVE FINISHED THE GAME!",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 + 64);
+				initialFont.draw(game.batch, "Press ESC to continue.",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2);
+
+				game.batch.end();
+
+				if (MyInput.isPressed(MyInput.ESC)) {
+					game.setScreen(BuildUpGame.creditsScreen);
+				}
+				return;
+			}else {
+				paused = true;
+				
+				game.batch.begin();
+
+				initialFont.draw(game.batch, "PAUSED!", Constants.V_WIDTH / 2 - 64,
+						Constants.V_HEIGHT / 2 + 64);
+				initialFont.draw(game.batch, "Press ESC to go to Main Menu.",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2);
+				initialFont.draw(game.batch, "Press P to resume.",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 - 64);
+				initialFont.draw(game.batch, "Press R to retry.",
+						Constants.V_WIDTH / 2 - 64, Constants.V_HEIGHT / 2 - 128);
+
+				game.batch.end();
+				if (MyInput.isPressed(MyInput.ESC)) {
+					game.setScreen(BuildUpGame.mainMenuScene);
+				}
+				if (MyInput.isPressed(MyInput.P)) {
+					System.out.println("asdasd");
+					paused = false;
+				}
+				if (MyInput.isPressed(MyInput.R)) {
+					loadMap(currentLevel);
+				}
+
+				return;
+			}
+		}
+		
+		if (contactListener.loadNextLevel()) {
+			if (currentLevel + 1 == Constants.LEVEL_COUNT) {
+				gameFinished = true;
+				paused = true;
+				return;
+			}
+			loadNextLevel();
+			return;
+		}
+		if (contactListener.isPlayerDead()) {
+
+			playerHit();
+
+			return;
+		}
 	}
 
 	private void centerCamera() {
@@ -328,8 +325,7 @@ public class PlayScreen implements Screen {
 			else if (vel == 0) {
 
 			} else
-				backgroundLayer
-						.move(Direction.RIGHT, -vel * Constants.PPM / 4);
+				backgroundLayer.move(Direction.RIGHT, -vel * Constants.PPM / 4);
 		}
 
 		cam.position.set(posX, mapHeight / 2, 0);
@@ -337,6 +333,8 @@ public class PlayScreen implements Screen {
 	}
 
 	private void update(float delta) {
+		if (paused || contactListener.isPlayerDead() || gameFinished)
+			return;
 
 		handleInput();
 
@@ -382,13 +380,6 @@ public class PlayScreen implements Screen {
 					-blackPlayer.getBody().getLinearVelocity().y);
 		}
 
-		// for (int i = 0; i < blackStones.size; i++) {
-		// blackStones.get(i).update(delta);
-		// }
-		//
-		// for (int i = 0; i < whiteStones.size; i++)
-		// whiteStones.get(i).update(delta);
-
 		for (int i = 0; i < blackSpikes.size; i++)
 			blackSpikes.get(i).update(delta);
 
@@ -399,39 +390,43 @@ public class PlayScreen implements Screen {
 			crystals.get(i).update(delta);
 
 		backgroundLayer.update(delta);
+		
+		if(paused)
+			MyInput.update();
 	}
 
 	private void handleInput() {
 		if (MyInput.isPressed(MyInput.P) || MyInput.isPressed(MyInput.ESC)) {
 			paused = true;
 		}
+		
 		if (MyInput.isPressed(MyInput.Z)) {
-			for (int i = 0; i < blackStones.size; i++) {
+			for (int i = 0; i < blackStones.size; i++)
 				blackStones.get(i).toggleActive();
-			}
-			for (int i = 0; i < whiteStones.size; i++) {
+			
+			for (int i = 0; i < whiteStones.size; i++)
 				whiteStones.get(i).toggleActive();
-			}
+			
 			whiteActive = !whiteActive;
 		}
 
 		if (MyInput.isDown(MyInput.RIGHT)) {
-			blackPlayer.move(Direction.RIGHT);
-			whitePlayer.move(Direction.RIGHT);
+			if (!whiteActive)
+				blackPlayer.move(Direction.RIGHT);
+			if (whiteActive)
+				whitePlayer.move(Direction.RIGHT);
 		}
 		if (MyInput.isDown(MyInput.LEFT)) {
-			blackPlayer.move(Direction.LEFT);
-			whitePlayer.move(Direction.LEFT);
+			if (!whiteActive)
+				blackPlayer.move(Direction.LEFT);
+			else
+				whitePlayer.move(Direction.LEFT);
 		}
 		if (MyInput.isPressed(MyInput.SPACE)) {
-			if (contactListener.isBPGrounded() && !whiteActive) {
+			if (!whiteActive && contactListener.isBPGrounded())
 				blackPlayer.jump();
+			if (whiteActive && contactListener.isWPGrounded())
 				whitePlayer.jump();
-			}
-			if (contactListener.isWPGrounded() && whiteActive) {
-				blackPlayer.jump();
-				whitePlayer.jump();
-			}
 		}
 	}
 
@@ -455,7 +450,13 @@ public class PlayScreen implements Screen {
 	@Override
 	public void dispose() {
 		world.dispose();
-
+		b2dr.dispose();
+		
+		map.dispose();
+		
+		initialFont.dispose();
+		
+		sb.dispose();
 	}
 
 	private void createPlayers() {
@@ -477,6 +478,8 @@ public class PlayScreen implements Screen {
 	}
 
 	private void createMap(int level) {
+		if(map != null)
+			map.dispose();
 		map = new TmxMapLoader().load("res/maps/level" + level + ".tmx");
 		// tmr = new OrthogonalTiledMapRenderer(map);
 
@@ -563,7 +566,7 @@ public class PlayScreen implements Screen {
 		}
 
 		layer = (TiledMapTileLayer) map.getLayers().get("whiteSpikes");
-		whiteSpikes = new Array<Spike>();
+		whiteSpikes = new Array<WhiteSpike>();
 		if (layer != null) {
 			for (int row = 0; row < layer.getHeight(); row++) {
 				for (int col = 0; col < layer.getWidth(); col++) {
@@ -577,9 +580,9 @@ public class PlayScreen implements Screen {
 					if (cell.getTile() == null)
 						continue;
 
-					Spike spike = new Spike(new Vector2((col)
+					WhiteSpike spike = new WhiteSpike(new Vector2((col)
 							* Constants.TILE_HEIGHT, row
-							* Constants.TILE_HEIGHT), Color.WHITE);
+							* Constants.TILE_HEIGHT));
 					spike.setWorldAndCreateBody(world);
 					whiteSpikes.add(spike);
 				}
@@ -587,7 +590,7 @@ public class PlayScreen implements Screen {
 		}
 
 		layer = (TiledMapTileLayer) map.getLayers().get("blackSpikes");
-		blackSpikes = new Array<Spike>();
+		blackSpikes = new Array<BlackSpike>();
 		if (layer != null) {
 			for (int row = 0; row < layer.getHeight(); row++) {
 				for (int col = 0; col < layer.getWidth(); col++) {
@@ -601,9 +604,9 @@ public class PlayScreen implements Screen {
 					if (cell.getTile() == null)
 						continue;
 
-					Spike spike = new Spike(new Vector2((col)
+					BlackSpike spike = new BlackSpike(new Vector2((col)
 							* Constants.TILE_HEIGHT, (row)
-							* Constants.TILE_HEIGHT), Color.BLACK);
+							* Constants.TILE_HEIGHT));
 					spike.setWorldAndCreateBody(world);
 					blackSpikes.add(spike);
 				}
@@ -679,8 +682,6 @@ public class PlayScreen implements Screen {
 
 		FixtureDef fDef = new FixtureDef();
 		fDef.shape = shape;
-		fDef.density = 5.f;
-		fDef.friction = .5f;
 		fDef.filter.categoryBits = Constants.C_WORLDWRAP;
 		fDef.filter.maskBits = Constants.C_BLACKPLAYER
 				| Constants.C_WHITEPLAYER;
@@ -689,8 +690,6 @@ public class PlayScreen implements Screen {
 
 		fDef = new FixtureDef();
 		fDef.shape = shape2;
-		fDef.density = 5.f;
-		fDef.friction = .5f;
 		fDef.filter.categoryBits = Constants.C_WORLDWRAP;
 		fDef.filter.maskBits = Constants.C_BLACKPLAYER
 				| Constants.C_WHITEPLAYER;

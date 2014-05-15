@@ -1,4 +1,4 @@
-package com.seligames.buildUp.entities;
+package com.seligames.buildUp.entities.white;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,11 +10,9 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.seligames.buildUp.BuildUpGame;
 import com.seligames.buildUp.Constants;
+import com.seligames.buildUp.entities.abstracts.Stone;
 
-public class WhiteStone extends GameEntity{
-
-	private Color color;
-	private boolean active;
+public class WhiteStone extends Stone{
 	
 	public WhiteStone(Vector2 pos) {
 		this(pos, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
@@ -22,12 +20,11 @@ public class WhiteStone extends GameEntity{
 	
 	public WhiteStone(Vector2 pos, float width, float height) {
 		super(pos, width, height);
-		
-		this.color = Color.WHITE;
+		TextureRegion[] tr = new TextureRegion[2];
 		
 		Texture t = BuildUpGame.assetManager.get("res/whiteStone.png");
-		TextureRegion[] tr = new TextureRegion[2];
 		tr[0] = new TextureRegion(t);
+		
 		t = BuildUpGame.assetManager.get("res/whiteStoneFaded.png");
 		tr[1] = new TextureRegion(t);
 
@@ -67,22 +64,4 @@ public class WhiteStone extends GameEntity{
 		
 		shape.dispose();
 	}
-
-	public Color getColor() {
-		return color;
-	}
-
-	public boolean isActive() {
-		return active;
-	}
-
-	public void toggleActive() {
-		this.active = !active;
-		if(active)
-			currentTexRegion = animation.get(0);
-		else
-			currentTexRegion = animation.get(1);
-	}
-	
-	
 }

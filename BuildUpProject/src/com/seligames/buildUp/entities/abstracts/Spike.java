@@ -1,42 +1,23 @@
-package com.seligames.buildUp.entities;
+package com.seligames.buildUp.entities.abstracts;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 import com.badlogic.gdx.physics.box2d.CircleShape;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.World;
-import com.seligames.buildUp.BuildUpGame;
 import com.seligames.buildUp.Constants;
 
 public class Spike extends GameEntity {
 
-	private float radius;
-	private float radiusTolarance = 8.f;
+	protected float radius;
+	protected float radiusTolarance = 8.f;
 
-	public Spike(Vector2 pos, Color color) {
+	public Spike(Vector2 pos) {
 		super(pos, Constants.TILE_WIDTH, Constants.TILE_HEIGHT);
 		this.radius = (float) (Constants.TILE_HEIGHT / 2 - radiusTolarance)
 				/ Constants.PPM;
-
-		Texture t;
-
-		if (color != Color.BLACK) {
-			t = BuildUpGame.assetManager.get("res/blackSpike.png");
-			TextureRegion[] tr = TextureRegion.split(t,
-					(int) Constants.TILE_HEIGHT, (int) Constants.TILE_WIDTH)[0];
-			animation.setFrames(tr);
-		} else {
-			t = BuildUpGame.assetManager.get("res/whiteSpike.png");
-			TextureRegion[] tr = TextureRegion.split(t,
-					(int) Constants.TILE_HEIGHT, (int) Constants.TILE_WIDTH)[0];
-			animation.setFrames(tr);
-			animation.setDelay(.17f);
-		}
-
 	}
 
 	@Override
@@ -47,8 +28,7 @@ public class Spike extends GameEntity {
 		BodyDef bDef = new BodyDef();
 		bDef.fixedRotation = true;
 		bDef.type = BodyType.StaticBody;
-		// position.x += (float) radiusTolarance / 2 / Constants.PPM;
-		// position.y += (float) radiusTolarance / 2 / Constants.PPM;
+		
 		bDef.position.set(position);
 
 		CircleShape shape = new CircleShape();
@@ -81,5 +61,4 @@ public class Spike extends GameEntity {
 
 		sb.end();
 	}
-
 }

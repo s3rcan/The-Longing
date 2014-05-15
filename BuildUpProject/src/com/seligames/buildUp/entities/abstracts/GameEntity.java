@@ -1,4 +1,4 @@
-package com.seligames.buildUp.entities;
+package com.seligames.buildUp.entities.abstracts;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -11,7 +11,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.seligames.buildUp.Constants;
 import com.seligames.buildUp.handlers.Animation;
 
-public abstract class GameEntity {
+public abstract class GameEntity{
 
 	protected Vector2 position;
 	protected float width;

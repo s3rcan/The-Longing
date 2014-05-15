@@ -1,4 +1,4 @@
-package com.seligames.buildUp.entities;
+package com.seligames.buildUp.entities.natural;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
@@ -7,6 +7,7 @@ import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.seligames.buildUp.Constants;
+import com.seligames.buildUp.entities.abstracts.GameEntity;
 
 public class Elevator extends GameEntity{
 
